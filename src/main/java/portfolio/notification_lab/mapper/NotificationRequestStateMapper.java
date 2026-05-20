@@ -13,16 +13,16 @@ public interface NotificationRequestStateMapper {
     int markReservedAsSent(@Param("requestId") Long requestId);
 
     // RESERVED -> FAILED
-    int markReservedAsFailed(RequestFailureParam param);
+    int markReservedAsFailed(RequestFailureCommand command);
 
     // FAILED -> PENDING
     int markFailedAsPending(@Param("requestId") Long requestId);
 
     // FAILED -> DEAD
-    int markFailedAsDead(RequestDeadParam param);
+    int markFailedAsDead(RequestDeadCommand command);
 
     // RESERVED -> DEAD
-    int markReservedAsDead(RequestDeadParam param);
+    int markReservedAsDead(RequestDeadCommand command);
 
     // RESERVED -> PENDING, 복구 시간
     int releaseExpiredReservations(@Param("timeoutMinutes") int timeoutMinutes);

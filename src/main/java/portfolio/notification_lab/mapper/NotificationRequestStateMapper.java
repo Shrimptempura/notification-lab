@@ -2,6 +2,8 @@ package portfolio.notification_lab.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import portfolio.notification_lab.command.RequestDeadCommand;
+import portfolio.notification_lab.command.RequestFailureCommand;
 
 @Mapper
 public interface NotificationRequestStateMapper {

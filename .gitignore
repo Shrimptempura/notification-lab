@@ -38,3 +38,5 @@ out/
 
 ### Local config ###
 **/application-test.properties
+/docs/personal.txt
+/docs/personal-issue.txt

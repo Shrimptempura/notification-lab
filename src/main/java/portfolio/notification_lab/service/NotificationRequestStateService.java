@@ -9,7 +9,7 @@ public interface NotificationRequestStateService {
     void markSent(Long requestId);
 
     // RESERVED -> FAILED
-    void markRetryableFailure(Long requestId, String failReason, int nextRetrySeconds);
+    void markRetryableFailure(Long requestId, String failReason, int nextRetrySeconds, int maxRetryCount);
 
     // FAILED -> PENDING
     void markReadyForRetry(Long requestId);

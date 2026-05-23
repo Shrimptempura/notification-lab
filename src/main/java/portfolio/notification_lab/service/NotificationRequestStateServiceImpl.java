@@ -51,21 +51,22 @@ public class NotificationRequestStateServiceImpl implements NotificationRequestS
     // RESERVED -> FAILED
     // 실패를 기록하고 다음 재시도 시간을 설정한다
     @Override
-    public void markRetryableFailure(Long requestId, String failReason, int nextRetrySeconds) {
+    public void markRetryableFailure(Long requestId, String failReason, int nextRetrySeconds, int maxRetryCount) {
         validateRequestId(requestId);
         validateFailReason(failReason);
         validateNextRetrySeconds(nextRetrySeconds);
+        validateMaxRetryCount(maxRetryCount);
 
-        RequestFailureCommand command = new RequestFailureCommand(requestId, failReason, nextRetrySeconds);
+        RequestFailureCommand command = new RequestFailureCommand(requestId, failReason, nextRetrySeconds, maxRetryCount);
 
         int updated = mapper.markReservedAsFailed(command);
 
         if (updated != 1) {
-            log.warn("알림 FAILED 처리 실패 - RESERVED 상태가 아님. requestId={} failReason={}", requestId, failReason);
+            log.warn("알림 FAILED 처리 실패 - RESERVED 상태가 아니거나 최대 재시도 횟수에 도달함. requestId={} failReason={} maxRetryCount={}", requestId, failReason, maxRetryCount);
             throw new IllegalStateException("알림 FAILED 처리 실패");
         }
 
-        log.debug("알림 FAILED 처리 완료 - requestId={} failReason={} nextRetrySeconds={}", requestId, failReason, nextRetrySeconds);
+        log.debug("알림 FAILED 처리 완료 - requestId={} failReason={} nextRetrySeconds={} maxRetryCount={}", requestId, failReason, nextRetrySeconds, maxRetryCount);
     }
 
     // FAILED -> PENDING
@@ -157,6 +158,12 @@ public class NotificationRequestStateServiceImpl implements NotificationRequestS
     private void validateTimeoutMinutes(int timeoutMinutes) {
         if (timeoutMinutes <= 0) {
             throw new IllegalArgumentException("timeoutMinutes는 1 이상이어야 합니다: " + timeoutMinutes);
+        }
+    }
+
+    private void validateMaxRetryCount(int maxRetryCount) {
+        if (maxRetryCount < 1) {
+            throw new IllegalArgumentException("maxRetryCount는 1 이상이어야 합니다: " + maxRetryCount);
         }
     }
 

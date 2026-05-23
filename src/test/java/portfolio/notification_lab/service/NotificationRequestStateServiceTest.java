@@ -85,9 +85,10 @@ class NotificationRequestStateServiceTest {
             Long requestId = 1L;
             String failReason = "TEMPORARY_ERROR";
             int nextRetrySeconds = 30;
+            int maxRetryCount = 3;
 
             when(mapper.markReservedAsFailed(any(RequestFailureCommand.class))).thenReturn(1);
-            service.markRetryableFailure(requestId, failReason, nextRetrySeconds);
+            service.markRetryableFailure(requestId, failReason, nextRetrySeconds, maxRetryCount);
 
             // Command 객체 내부 값 확인이 핵심 -> ArgumentCaptor
             ArgumentCaptor<RequestFailureCommand> captor = ArgumentCaptor.forClass(RequestFailureCommand.class);
@@ -98,6 +99,7 @@ class NotificationRequestStateServiceTest {
             assertThat(command.getRequestId()).isEqualTo(requestId);
             assertThat(command.getFailReason()).isEqualTo(failReason);
             assertThat(command.getNextRetrySeconds()).isEqualTo(nextRetrySeconds);
+            assertThat(command.getMaxRetryCount()).isEqualTo(maxRetryCount);
         }
 
         @Test
@@ -106,10 +108,11 @@ class NotificationRequestStateServiceTest {
             Long requestId = 1L;
             String failReason = "TEMPORARY_ERROR";
             int nextRetrySeconds = 30;
+            int maxRetryCount = 3;
 
             when(mapper.markReservedAsFailed(any(RequestFailureCommand.class))).thenReturn(0);
 
-            assertThatThrownBy(() -> service.markRetryableFailure(requestId, failReason, nextRetrySeconds))
+            assertThatThrownBy(() -> service.markRetryableFailure(requestId, failReason, nextRetrySeconds, maxRetryCount))
                     .isInstanceOf(IllegalStateException.class);
         }
 
@@ -227,7 +230,7 @@ class NotificationRequestStateServiceTest {
         @Test
         @DisplayName("failReason이 null이면 예외 발생하고 mapper 호출X")
         void fail_whenBlankFailReason() {
-            assertThatThrownBy(() -> service.markRetryableFailure(1L, null, 30))
+            assertThatThrownBy(() -> service.markRetryableFailure(1L, null, 30, 3))
                     .isInstanceOf(IllegalArgumentException.class);
 
             verifyNoInteractions(mapper);
@@ -236,7 +239,7 @@ class NotificationRequestStateServiceTest {
         @Test
         @DisplayName("nextRetrySeconds가 1 미만이면 예외 발생하고 mapper 호출X")
         void fail_whenInvalidNextRetrySeconds() {
-            assertThatThrownBy(() -> service.markRetryableFailure(1L, "TEMPORARY_ERROR", 0))
+            assertThatThrownBy(() -> service.markRetryableFailure(1L, "TEMPORARY_ERROR", 0, 3))
                     .isInstanceOf(IllegalArgumentException.class);
 
             verifyNoInteractions(mapper);
@@ -246,6 +249,15 @@ class NotificationRequestStateServiceTest {
         @DisplayName("timeoutMinutes가 1 미만이면 예외 발생하고 mapper 호출X")
         void fail_whenInvalidTimeoutMinutes() {
             assertThatThrownBy(() -> service.releaseExpiredReservations(0))
+                    .isInstanceOf(IllegalArgumentException.class);
+
+            verifyNoInteractions(mapper);
+        }
+
+        @Test
+        @DisplayName("maxRetryCount가 1 미만이면 예외 발생하고 mapper 호출 X")
+        void fail_whenInvalidMaxRetryCount() {
+            assertThatThrownBy(() -> service.markRetryableFailure(1L, "TEMPORARY_ERROR", 30, 0))
                     .isInstanceOf(IllegalArgumentException.class);
 
             verifyNoInteractions(mapper);

@@ -37,6 +37,7 @@
             updated_at = NOW()
         WHERE id = #{requestId}
             AND status = 'RESERVED'
+            AND retry_count &lt; #{maxRetryCount}
     </update>
 
     <!-- FAILED -> PENDING -->

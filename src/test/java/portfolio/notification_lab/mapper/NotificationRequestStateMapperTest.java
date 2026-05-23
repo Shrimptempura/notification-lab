@@ -108,7 +108,7 @@ public class NotificationRequestStateMapperTest {
         @DisplayName("RESERVED 상태가 FAILED로 변경되고 retry_count가 증가한다")
         void markReservedAsFailed_success() {
             Long requestId = support.insertRequest("RESERVED", 0);
-            RequestFailureCommand command = new RequestFailureCommand(requestId, "TEMPORARY_ERROR", 10);
+            RequestFailureCommand command = new RequestFailureCommand(requestId, "TEMPORARY_ERROR", 10, 3);
 
             int updated = mapper.markReservedAsFailed(command);
 
@@ -126,7 +126,7 @@ public class NotificationRequestStateMapperTest {
         @DisplayName("RESERVED 상태가 아니면 FAILED로 변경되지 않는다")
         void markReservedAsFailed_fail_whenNotReserved() {
             Long requestId = support.insertRequest("PENDING", 0);
-            RequestFailureCommand command = new RequestFailureCommand(requestId, "TEMPORARY_ERROR", 10);
+            RequestFailureCommand command = new RequestFailureCommand(requestId, "TEMPORARY_ERROR", 10, 3);
 
             int updated = mapper.markReservedAsFailed(command);
 
@@ -135,6 +135,24 @@ public class NotificationRequestStateMapperTest {
             Map<String, Object> row = support.findRequestById(requestId);
             assertThat(row.get("status")).isEqualTo("PENDING");
             assertThat(row.get("retry_count")).isEqualTo(0);
+            assertThat(row.get("fail_reason")).isNull();
+            assertThat(row.get("failed_at")).isNull();
+            assertThat(row.get("next_retry_at")).isNull();
+        }
+
+        @Test
+        @DisplayName("retry_count가 최대 재시도 횟수 이상이라면 FAILED로 변경되지 않는다")
+        void markReservedAsFailed_fail_whenRetryCountExceeded() {
+            Long requestId = support.insertRequest("RESERVED", 3);
+            RequestFailureCommand command = new RequestFailureCommand(requestId, "TEMPORARY_ERROR", 10, 3);
+
+            int updated = mapper.markReservedAsFailed(command);
+
+            assertThat(updated).isEqualTo(0);
+
+            Map<String, Object> row = support.findRequestById(requestId);
+            assertThat(row.get("status")).isEqualTo("RESERVED");
+            assertThat(row.get("retry_count")).isEqualTo(3);
             assertThat(row.get("fail_reason")).isNull();
             assertThat(row.get("failed_at")).isNull();
             assertThat(row.get("next_retry_at")).isNull();

@@ -39,4 +39,3 @@ public interface NotificationWorkerMapper {
     // 상태별 요청 수 조회
     List<NotificationStatusCountDto> countByStatus();
 }
-ㅋ

@@ -53,13 +53,56 @@ class NotificationWorkerMapperTest {
     void findPendingRequests_limit() {
         Long firstId = support.insertRequest("PENDING", 0, null, null, 30);
         Long secondId = support.insertRequest("PENDING", 0, null, null, 20);
-        Long thirdId = support.insertRequest("PENDING", 0, null, null, 10);
+        support.insertRequest("PENDING", 0, null, null, 10);
 
         List<NotificationRequestDto> result = mapper.findPendingRequests(2);
 
         assertThat(result).hasSize(2);
+
+        // 정렬기준: created_at ASC, id ASC
         assertThat(result).extracting(NotificationRequestDto::getId)
                 .containsExactly(firstId, secondId);
+    }
+
+    @Test
+    @DisplayName("재시도 가능한 FAILED 요청 조회")
+    void findRetryableFailedRequests_success() {
+        Long firstId = support.insertRequest("FAILED", 1, -20, null, 30);
+        Long secondId = support.insertRequest("FAILED", 1, -10, null, 30);
+        support.insertRequest("FAILED", 3, -10, null, 30);  // retry_count 초과
+        support.insertRequest("FAILED", 1, 10, null, 40);   // next_retry_at 미래
+        support.insertRequest("PENDING", 0, null, null, 10);    // status 제외
+
+        List<NotificationRequestDto> result = mapper.findRetryableFailedRequests(10, 3);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getId()).isEqualTo(firstId);
+        assertThat(result.get(0).getStatus()).isEqualTo("FAILED");
+
+        // 정렬 기준: next_retry_at ASC, id ASC
+        assertThat(result).extracting(NotificationRequestDto::getId)
+                .containsExactly(firstId, secondId);
+    }
+
+    @Test
+    @DisplayName("PENDING과 재시도 가능한 FAILED 요청을 함께 조회")
+    void findRunnableRequests_success() {
+        Long pendingId = support.insertRequest("PENDING", 0, null, null, 10);
+        Long retryableFailedId = support.insertRequest("FAILED", 1, -10, null, 30);
+        support.insertRequest("FAILED", 3, -10, null, 30);  // retry_count 초과
+        support.insertRequest("FAILED", 1, 10, null, 40);   // next_retry_at 미래
+        support.insertRequest("RESERVED", 0, null, -10, 30);  // RESERVED 제외
+
+        List<NotificationRequestDto> result = mapper.findRunnableRequests(10, 3);
+
+        assertThat(result).hasSize(2);
+
+        // 정렬 기준: FAILED, PENDING, COALESCE(next_retry_at, created_at) ASC, id ASC
+        assertThat(result).extracting(NotificationRequestDto::getId)
+                .containsExactly(retryableFailedId, pendingId);
+
+        assertThat(result).extracting(NotificationRequestDto::getStatus)
+                .containsExactly("FAILED", "PENDING");
     }
 
 }

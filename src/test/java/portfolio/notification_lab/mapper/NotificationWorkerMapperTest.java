@@ -156,4 +156,18 @@ class NotificationWorkerMapperTest {
         assertThat(thirdRow.get("reserved_at")).isNull();
     }
 
+    @Test
+    @DisplayName("정해진 timeout 시간이 지난 오래된 RESERVED 요청 조회")
+    void findExpiredReservedRequests_success() {
+        Long expiredId = support.insertRequest("RESERVED", 0, null, -20, 30);
+        support.insertRequest("RESERVED", 0, null, -5, 20);     // 아직 방치된 시간이 아님
+        support.insertRequest("PENDING", 0, null, null, 10);    // PENDING
+
+        List<NotificationRequestDto> result = mapper.findExpiredReservations(10);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getId()).isEqualTo(expiredId);
+        assertThat(result.get(0).getStatus()).isEqualTo("RESERVED");
+    }
+
 }

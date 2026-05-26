@@ -29,6 +29,7 @@ public interface NotificationWorkerMapper {
     // 지금 worker가 처리 가능한 요청 선별하고 RESERVED로 점유한다
     // PENDING 또는 재시도 가능한 FAILED 요청 가져옴
     // 가져와서 RESERVED로 상태 업데이트
+    // FAILED는 -> PENDING -> RESERVED를 거치지 않고 바로 RESERVED로 점유함(복구 가능한 조건의 FAILED)
     // for update skip locked 사용해서 worker 중복 점유 방지
     List<NotificationRequestDto> reserveRunnableRequests(@Param("limit") int limit,
                                                          @Param("maxRetryCount") int maxRetryCount);

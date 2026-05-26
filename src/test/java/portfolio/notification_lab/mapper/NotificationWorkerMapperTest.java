@@ -12,6 +12,7 @@ import portfolio.notification_lab.NotificationWorkerMapperTestSupport;
 import portfolio.notification_lab.dto.NotificationRequestDto;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -103,6 +104,56 @@ class NotificationWorkerMapperTest {
 
         assertThat(result).extracting(NotificationRequestDto::getStatus)
                 .containsExactly("FAILED", "PENDING");
+    }
+
+    @Test
+    @DisplayName("처리 가능한 요청을 RESERVED로 선점하고 반환")
+    void reserveRunnableRequests_success() {
+        Long pendingId = support.insertRequest("PENDING", 0, null, null, 30);   // 처리 가능 PENDING 상태
+        Long retryableFailedId = support.insertRequest("FAILED", 1, -10, null, 30);// 재시도 가능한 FAILED
+        support.insertRequest("FAILED", 3, -10, null, 30);  // retry_count 초과
+        support.insertRequest("FAILED", 1, 10, null, 40);   // next_retry_at 미래
+        support.insertRequest("SENT", 0, null, null, 30);   // 이미 완료된 요청
+
+        List<NotificationRequestDto> result = mapper.reserveRunnableRequests(10, 3);
+
+        assertThat(result).hasSize(2);
+
+        // 선별만 정렬잡고 update은 안봄
+        assertThat(result).extracting(NotificationRequestDto::getId)
+                .containsExactlyInAnyOrder(pendingId, retryableFailedId);
+
+        assertThat(result).extracting(NotificationRequestDto::getStatus)
+                .containsOnly("RESERVED");
+
+        assertThat(result).extracting(NotificationRequestDto::getReservedAt)
+                .doesNotContainNull();
+    }
+
+    @Test
+    @DisplayName("처리 가능한 요청을 limit 개수만큼만 RESERVED로 선점한다")
+    void reserveRunnableRequests_limit() {
+        Long firstId = support.insertRequest("PENDING", 0, null, null, 30);
+        Long secondId = support.insertRequest("PENDING", 0, null, null, 20);
+        Long thirdId = support.insertRequest("PENDING", 0, null, null, 10);
+
+        List<NotificationRequestDto> result = mapper.reserveRunnableRequests(2, 3);
+
+        assertThat(result).hasSize(2);
+
+        assertThat(result).extracting(NotificationRequestDto::getId)
+                .containsExactlyInAnyOrder(firstId, secondId);
+
+        assertThat(result).extracting(NotificationRequestDto::getStatus)
+                .containsOnly("RESERVED");
+
+        assertThat(result).extracting(NotificationRequestDto::getReservedAt)
+                .doesNotContainNull();
+
+        Map<String, Object> thirdRow = support.findRequestById(thirdId);
+
+        assertThat(thirdRow.get("status")).isEqualTo("PENDING");
+        assertThat(thirdRow.get("reserved_at")).isNull();
     }
 
 }

@@ -35,6 +35,8 @@ public interface NotificationWorkerMapper {
                                                          @Param("maxRetryCount") int maxRetryCount);
 
     // RESERVED 상태로 오래 방치된 요청 조회
+    // stateMapper의 releaseExpiredReservations과 연계해서 사용
+    // releaseExpiredReservations: update, findExpiredReservations: select
     List<NotificationRequestDto> findExpiredReservations(@Param("timeoutMinutes") int timeoutMinutes);
 
     // 상태별 요청 수 조회

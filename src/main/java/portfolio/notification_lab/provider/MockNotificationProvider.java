@@ -9,7 +9,7 @@ import portfolio.notification_lab.dto.NotificationRequestDto;
 // DB 상태 직접 변경 X, 실제 발송 X, 발송 결과만 SendResult로 반환
 @Slf4j
 @Component
-public class MockNotificationProvider implements NotificationProvider{
+public class MockNotificationProvider implements NotificationProvider {
 
     @Override
     public SendResult send(NotificationRequestDto request) {

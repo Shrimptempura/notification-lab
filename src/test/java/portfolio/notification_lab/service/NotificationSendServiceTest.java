@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import portfolio.notification_lab.config.NotificationRetryProperties;
 import portfolio.notification_lab.dto.NotificationRequestDto;
 import portfolio.notification_lab.provider.NotificationProvider;
 import portfolio.notification_lab.provider.SendResult;
@@ -22,6 +23,9 @@ class NotificationSendServiceTest {
 
     @Mock
     private NotificationRequestStateService stateService;
+
+    @Mock
+    private NotificationRetryProperties retryProperties;
 
     @InjectMocks
     private NotificationSendServiceImpl service;
@@ -52,6 +56,8 @@ class NotificationSendServiceTest {
             NotificationRequestDto request = createRequest(1L, 100L);
 
             when(provider.send(request)).thenReturn(SendResult.retryableFailure("TIMED_OUT"));
+            when(retryProperties.nextRetrySeconds()).thenReturn(60);
+            when(retryProperties.maxRetryCount()).thenReturn(3);
 
             service.sendOne(request);
 

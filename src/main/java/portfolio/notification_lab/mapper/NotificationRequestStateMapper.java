@@ -27,6 +27,8 @@ public interface NotificationRequestStateMapper {
     int markReservedAsDead(RequestDeadCommand command);
 
     // RESERVED -> PENDING, 복구 시간
+    // reserved_at &lt; NOW() - (#{timeoutMinutes} * INTERVAL '1 minute') 기준
+    // 방치된 RESERVED 선점 PENDING 상태로 변환
     int releaseExpiredReservations(@Param("timeoutMinutes") int timeoutMinutes);
 
 

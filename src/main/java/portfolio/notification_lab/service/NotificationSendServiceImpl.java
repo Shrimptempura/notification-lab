@@ -21,30 +21,37 @@ public class NotificationSendServiceImpl implements NotificationSendService {
     public void sendOne(NotificationRequestDto request) {
         validateRequest(request);
 
+        Long requestId = request.getId();
+
         // 계산 로직으로 발송 결과 값을 SendResult에 반환
         SendResult result = provider.send(request);
 
         // 결과 값을 발송 상태로 업데이트(성공)
         if (result.success()) {
-            stateService.markSent(request.getId());
-            log.debug("알림 발송 성공 - requestId={}", request.getId());
+            stateService.markSent(requestId);
+            log.debug("알림 발송 성공 - requestId={}", requestId);
 
             return;
         }
 
+        String failReason = result.failReason();
+
         // 재시도 가능
         if (result.retryable()) {
-            stateService.markRetryableFailure(request.getId(), result.failReason(), retryProperties.nextRetrySeconds(), retryProperties.maxRetryCount());
+            int nextRetrySeconds = retryProperties.nextRetrySeconds();
+            int maxRetryCount = retryProperties.maxRetryCount();
+
+            stateService.markRetryableFailure(requestId, failReason, nextRetrySeconds, maxRetryCount);
             log.debug("알림 재시도 가능 - requestId={} reason={} nextRetrySeconds={} maxRetryCount={}",
-                    request.getId(), result.failReason(), retryProperties.nextRetrySeconds(), retryProperties.maxRetryCount());
+                    requestId, failReason, nextRetrySeconds, maxRetryCount);
 
             return;
         }
 
         // 재시도 불가능
-        stateService.markDeadByNonRetryableFailure(request.getId(), result.failReason());
+        stateService.markDeadByNonRetryableFailure(requestId, failReason);
 
-        log.debug("알림 재시도 불가능 - requestId={} reason={}", request.getId(), result.failReason());
+        log.debug("알림 재시도 불가능 - requestId={} reason={}", requestId, failReason);
     }
 
     private void validateRequest(NotificationRequestDto request) {

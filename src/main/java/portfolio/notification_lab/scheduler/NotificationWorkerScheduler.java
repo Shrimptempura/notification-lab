@@ -19,16 +19,19 @@ public class NotificationWorkerScheduler {
 
     @Scheduled(fixedDelayString = "${notification.worker.fixed-delay-ms}")
     public void runWorker() {
+        int limit = workerProperties.limit();
+        int maxRetryCount = retryProperties.maxRetryCount();
+
         if (!workerProperties.enabled()) {
             return;
         }
 
         // runOnce는 조건(PENDING, 재시도 가능한 FAILED)을 만족하면 RESERVED로 limit 개수만큼 반환하여 1회 발송(안에서 반복문)
-        int processCount = workerRunner.runOnce(workerProperties.limit(), retryProperties.maxRetryCount());
+        int processCount = workerRunner.runOnce(limit, maxRetryCount);
 
         // 전체 테이블 처리가 아님
         if (processCount > 0) {
-            log.info("알림 worker 스케줄 실행 완료 - processCount={} limit={} maxRetryCount={}", processCount, workerProperties.limit(), retryProperties.maxRetryCount());
+            log.info("알림 worker 스케줄 실행 완료 - processCount={} limit={} maxRetryCount={}", processCount, limit, maxRetryCount);
         }
     }
 }

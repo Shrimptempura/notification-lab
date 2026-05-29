@@ -19,12 +19,12 @@ public class NotificationWorkerScheduler {
 
     @Scheduled(fixedDelayString = "${notification.worker.fixed-delay-ms}")
     public void runWorker() {
-        int limit = workerProperties.limit();
-        int maxRetryCount = retryProperties.maxRetryCount();
-
         if (!workerProperties.enabled()) {
             return;
         }
+
+        int limit = workerProperties.limit();
+        int maxRetryCount = retryProperties.maxRetryCount();
 
         // runOnce는 조건(PENDING, 재시도 가능한 FAILED)을 만족하면 RESERVED로 limit 개수만큼 반환하여 1회 발송(안에서 반복문)
         int processCount = workerRunner.runOnce(limit, maxRetryCount);

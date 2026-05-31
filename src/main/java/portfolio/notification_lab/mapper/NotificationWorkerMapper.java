@@ -38,7 +38,4 @@ public interface NotificationWorkerMapper {
     // stateMapper의 releaseExpiredReservations과 연계해서 사용
     // releaseExpiredReservations: update, findExpiredReservations: select
     List<NotificationRequestDto> findExpiredReservations(@Param("timeoutMinutes") int timeoutMinutes);
-
-    // 상태별 요청 수 조회
-    List<NotificationStatusCountDto> countByStatus();
 }

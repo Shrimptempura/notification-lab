@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import portfolio.notification_lab.dto.NotificationRequestDto;
-import portfolio.notification_lab.dto.NotificationStatusCountDto;
 import portfolio.notification_lab.mapper.NotificationWorkerMapper;
 
 import java.util.List;
@@ -75,28 +74,4 @@ class NotificationWorkerServiceTest {
             verifyNoInteractions(mapper);
         }
     }
-
-    @Nested
-    @DisplayName("상태별 요청 수 조회")
-    class CountByStatus {
-
-        @Test
-        @DisplayName("상태별 요청 수 조회")
-        void countByStatus_success() {
-            List<NotificationStatusCountDto> statusCounts = List.of(
-                    new NotificationStatusCountDto("PENDING", 10L),
-                    new NotificationStatusCountDto("RESERVED", 20L),
-                    new NotificationStatusCountDto("FAILED", 30L)
-            );
-
-            when(mapper.countByStatus()).thenReturn(statusCounts);
-
-            List<NotificationStatusCountDto> result = service.countByStatus();
-
-            assertThat(result).isSameAs(statusCounts);
-
-            verify(mapper).countByStatus();
-        }
-    }
-
 }

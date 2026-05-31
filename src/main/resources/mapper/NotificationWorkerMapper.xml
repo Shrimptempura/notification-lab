@@ -185,15 +185,4 @@
             AND reserved_at &lt; NOW() - (#{timeoutMinutes} * INTERVAL '1 minute')
         ORDER BY reserved_at ASC, id ASC
     </select>
-
-    <!-- 상태별 요청 조회 수 -->
-    <select id="countByStatus"
-            resultType="portfolio.notification_lab.dto.NotificationStatusCountDto">
-        SELECT
-            status,
-            COUNT(*) AS count
-        FROM notification_request
-        GROUP BY status
-        ORDER BY status
-    </select>
 </mapper>

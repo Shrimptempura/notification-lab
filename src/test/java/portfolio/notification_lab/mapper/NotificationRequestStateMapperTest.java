@@ -183,8 +183,9 @@ public class NotificationRequestStateMapperTest {
         @DisplayName("재시도 시간이 지난 FAILED 요청이 retry_count가 3 미만이면 PENDING으로 복구된다")
         void markFailedAsPending_success() {
             Long requestId = support.insertFailedRequest(2, LocalDateTime.now().minusSeconds(1));
+            int maxRetryCount = 3;
 
-            int updated = mapper.markFailedAsPending(requestId);
+            int updated = mapper.markFailedAsPending(requestId, maxRetryCount);
 
             assertThat(updated).isEqualTo(1);
 
@@ -197,8 +198,9 @@ public class NotificationRequestStateMapperTest {
         @DisplayName("재시도 시간이 지나지 않으면 FAILED 요청은 PENDING으로 복구되지 않는다")
         void markFailedAsPending_fail_whenRetryTimeNotReached() {
             Long requestId = support.insertFailedRequest(2, LocalDateTime.now().plusMinutes(10));
+            int maxRetryCount = 3;
 
-            int updated = mapper.markFailedAsPending(requestId);
+            int updated = mapper.markFailedAsPending(requestId, maxRetryCount);
 
             assertThat(updated).isEqualTo(0);
 
@@ -214,14 +216,15 @@ public class NotificationRequestStateMapperTest {
         @DisplayName("retry_count가 3이상이면 FAILED 요청은 PENDING으로 복구되지 않는다")
         void markFailedAsPending_fail_whenRetryCountExceeded() {
             Long requestId = support.insertFailedRequest(3, LocalDateTime.now().minusSeconds(1));
+            int maxRetryCount = 3;
 
-            int updated = mapper.markFailedAsPending(requestId);
+            int updated = mapper.markFailedAsPending(requestId, maxRetryCount);
 
             assertThat(updated).isEqualTo(0);
 
             Map<String, Object> row = support.findRequestById(requestId);
             assertThat(row.get("status")).isEqualTo("FAILED");
-            assertThat(row.get("retry_count")).isEqualTo(3);
+            assertThat(row.get("retry_count")).isEqualTo(maxRetryCount);
         }
 
         @Test

@@ -12,7 +12,7 @@ public interface NotificationRequestStateService {
     void markRetryableFailure(Long requestId, String failReason, int nextRetrySeconds, int maxRetryCount);
 
     // FAILED -> PENDING
-    void markReadyForRetry(Long requestId);
+    void markReadyForRetry(Long requestId, int maxRetryCount);
 
     // FAILED -> DEAD
     void markDeadAfterRetryExceeded(Long requestId, String failReason, int maxRetryCount);

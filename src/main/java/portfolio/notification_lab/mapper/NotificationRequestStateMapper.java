@@ -18,7 +18,8 @@ public interface NotificationRequestStateMapper {
     int markReservedAsFailed(RequestFailureCommand command);
 
     // FAILED -> PENDING
-    int markFailedAsPending(@Param("requestId") Long requestId);
+    int markFailedAsPending(@Param("requestId") Long requestId,
+                            @Param("maxRetryCount") int maxRetryCount);
 
     // FAILED -> DEAD
     int markFailedAsDead(@Param("requestId") Long requestId,

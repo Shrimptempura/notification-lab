@@ -72,17 +72,18 @@ public class NotificationRequestStateServiceImpl implements NotificationRequestS
     // FAILED -> PENDING
     // 재시도 시간이 되었고 retry_count가 허용범위인 경우 다시 요청을 대기 상태(PENDING)으로 돌린다.
     @Override
-    public void markReadyForRetry(Long requestId) {
+    public void markReadyForRetry(Long requestId, int maxRetryCount) {
         validateRequestId(requestId);
+        validateMaxRetryCount(maxRetryCount);
 
-        int updated = mapper.markFailedAsPending(requestId);
+        int updated = mapper.markFailedAsPending(requestId, maxRetryCount);
 
         if (updated != 1) {
-            log.warn("알림 재시도 대기 전환 실패 - 재시도 조건 미충족. requestId={}", requestId);
+            log.warn("알림 재시도 대기 전환 실패 - 재시도 조건 미충족. requestId={} maxRetryCount={}", requestId, maxRetryCount);
             throw new IllegalStateException("알림 재시도 대기 전환 실패");
         }
 
-        log.debug("알림 재시도 대기 전환 완료 - requestId={}", requestId);
+        log.debug("알림 재시도 대기 전환 완료 - requestId={} maxRetryCount={}", requestId, maxRetryCount);
     }
 
     // FAILED -> DEAD

@@ -144,21 +144,23 @@ class NotificationRequestStateServiceTest {
         @DisplayName("FAILED 요청을 재시도 대기 상태로 전환한다(PENDING)")
         void markReadyForRetry_success() {
             Long requestId = 1L;
+            int maxRetryCount = 3;
 
-            when(mapper.markFailedAsPending(requestId)).thenReturn(1);
-            service.markReadyForRetry(requestId);
+            when(mapper.markFailedAsPending(requestId, maxRetryCount)).thenReturn(1);
+            service.markReadyForRetry(requestId, maxRetryCount);
 
-            verify(mapper).markFailedAsPending(requestId);
+            verify(mapper).markFailedAsPending(requestId, maxRetryCount);
         }
 
         @Test
         @DisplayName("재시도 조건을 만족하지 않으면 예외가 발생")
         void markReadyForRetry_fail_whenUpdateCountIsZero() {
             Long requestId = 1L;
+            int maxRetryCount = 3;
 
-            when(mapper.markFailedAsPending(requestId)).thenReturn(0);
+            when(mapper.markFailedAsPending(requestId, maxRetryCount)).thenReturn(0);
 
-            assertThatThrownBy(() -> service.markReadyForRetry(requestId))
+            assertThatThrownBy(() -> service.markReadyForRetry(requestId, maxRetryCount))
                     .isInstanceOf(IllegalStateException.class);
         }
 

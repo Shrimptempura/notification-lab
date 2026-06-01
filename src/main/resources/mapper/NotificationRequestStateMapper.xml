@@ -49,7 +49,7 @@
         WHERE id = #{requestId}
             AND status = 'FAILED'
             AND next_retry_at &lt;= NOW()
-            AND retry_count &lt; 3
+            AND retry_count &lt; #{maxRetryCount}
     </update>
 
     <!-- FAILED -> DEAD -->

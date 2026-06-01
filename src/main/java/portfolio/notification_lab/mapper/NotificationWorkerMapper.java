@@ -3,7 +3,6 @@ package portfolio.notification_lab.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import portfolio.notification_lab.dto.NotificationRequestDto;
-import portfolio.notification_lab.dto.NotificationStatusCountDto;
 
 import java.util.List;
 

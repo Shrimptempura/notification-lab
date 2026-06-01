@@ -88,20 +88,19 @@ public class NotificationRequestStateServiceImpl implements NotificationRequestS
     // FAILED -> DEAD
     // 최대 재시도 횟수에 도달하면 요청을 최종 실패 처리한다.
     @Override
-    public void markDeadAfterRetryExceeded(Long requestId, String failReason) {
+    public void markDeadAfterRetryExceeded(Long requestId, String failReason, int maxRetryCount) {
         validateRequestId(requestId);
         validateFailReason(failReason);
+        validateMaxRetryCount(maxRetryCount);
 
-        RequestDeadCommand command = new RequestDeadCommand(requestId, failReason);
-
-        int updated = mapper.markFailedAsDead(command);
+        int updated = mapper.markFailedAsDead(requestId, failReason, maxRetryCount);
 
         if (updated != 1) {
-            log.warn("알림 DEAD 처리 실패 - FAILED 상태가 아니거나 retry_count 조건 미충족. requestId={} failReason={}", requestId, failReason);
+            log.warn("알림 DEAD 처리 실패 - FAILED 상태가 아니거나 retry_count 조건 미충족. requestId={} failReason={} maxRetryCount={}", requestId, failReason, maxRetryCount);
             throw new IllegalStateException("알림 DEAD 처리 실패");
         }
 
-        log.debug("알림 DEAD 처리 완료 - 최대 재시도 초과 requestId={} failReason={}", requestId, failReason);
+        log.debug("알림 DEAD 처리 완료 - 최대 재시도 초과 requestId={} failReason={} maxRetryCount={}", requestId, failReason, maxRetryCount);
     }
 
     // RESERVED -> DEAD

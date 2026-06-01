@@ -38,12 +38,7 @@ public class NotificationSendServiceImpl implements NotificationSendService {
 
         // 재시도 가능
         if (result.retryable()) {
-            int nextRetrySeconds = retryProperties.nextRetrySeconds();
-            int maxRetryCount = retryProperties.maxRetryCount();
-
-            stateService.markRetryableFailure(requestId, failReason, nextRetrySeconds, maxRetryCount);
-            log.debug("알림 재시도 가능 - requestId={} reason={} nextRetrySeconds={} maxRetryCount={}",
-                    requestId, failReason, nextRetrySeconds, maxRetryCount);
+            handleRetryableFailure(request, requestId, failReason);
 
             return;
         }
@@ -52,6 +47,25 @@ public class NotificationSendServiceImpl implements NotificationSendService {
         stateService.markDeadByNonRetryableFailure(requestId, failReason);
 
         log.debug("알림 재시도 불가능 - requestId={} reason={}", requestId, failReason);
+    }
+
+    private void handleRetryableFailure(NotificationRequestDto request, Long requestId, String failReason) {
+        int nextRetrySeconds = retryProperties.nextRetrySeconds();
+        int maxRetryCount = retryProperties.maxRetryCount();
+        int nextRetryCount = request.getRetryCount() + 1;
+
+        stateService.markRetryableFailure(requestId, failReason, nextRetrySeconds, maxRetryCount);
+
+        if (nextRetryCount >= maxRetryCount) {
+            stateService.markDeadAfterRetryExceeded(requestId, failReason, maxRetryCount);
+
+            log.debug("알림 최대 재시도 초과로 DEAD 처리 - requestId={} reason={} maxRetryCount={}", requestId, failReason, maxRetryCount);
+
+            return;
+        }
+
+        log.debug("알림 재시도 가능 - requestId={} reason={} nextRetrySeconds={} maxRetryCount={}",
+                requestId, failReason, nextRetrySeconds, maxRetryCount);
     }
 
     private void validateRequest(NotificationRequestDto request) {

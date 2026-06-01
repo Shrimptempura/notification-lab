@@ -228,9 +228,8 @@ public class NotificationRequestStateMapperTest {
         @DisplayName("retry_count가 3이상인 FAILED 요청은 DEAD로 변경된다")
         void markFailedAsDead_success() {
             Long requestId = support.insertFailedRequest(3, LocalDateTime.now().minusSeconds(1));
-            RequestDeadCommand command = new RequestDeadCommand(requestId, "MAX_RETRY_EXCEEDED");
 
-            int updated = mapper.markFailedAsDead(command);
+            int updated = mapper.markFailedAsDead(requestId, "MAX_RETRY_EXCEEDED", 3);
 
             assertThat(updated).isEqualTo(1);
 
@@ -244,9 +243,8 @@ public class NotificationRequestStateMapperTest {
         @DisplayName("retry_count가 3미만이면 FAILED 요청은 DEAD로 변경되지 않는다")
         void markFailedAsDead_fail_whenRetryCountNotReached() {
             Long requestId = support.insertFailedRequest(2, LocalDateTime.now().minusSeconds(1));
-            RequestDeadCommand command = new RequestDeadCommand(requestId, "MAX_RETRY_EXCEEDED");
 
-            int updated = mapper.markFailedAsDead(command);
+            int updated = mapper.markFailedAsDead(requestId, "MAX_RETRY_EXCEEDED", 3);
 
             assertThat(updated).isEqualTo(0);
 

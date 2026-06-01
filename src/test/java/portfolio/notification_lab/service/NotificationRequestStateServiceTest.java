@@ -167,17 +167,13 @@ class NotificationRequestStateServiceTest {
         void markDeadAfterRetryExceeded_success() {
             Long requestId = 1L;
             String failReason = "MAX_RETRY_EXCEEDED";
+            int maxRetryCount = 3;
 
-            when(mapper.markFailedAsDead(any(RequestDeadCommand.class))).thenReturn(1);
-            service.markDeadAfterRetryExceeded(requestId, failReason);
+            when(mapper.markFailedAsDead(requestId, failReason, maxRetryCount)).thenReturn(1);
 
-            ArgumentCaptor<RequestDeadCommand> captor = ArgumentCaptor.forClass(RequestDeadCommand.class);
+            service.markDeadAfterRetryExceeded(requestId, failReason, maxRetryCount);
 
-            verify(mapper).markFailedAsDead(captor.capture());
-
-            RequestDeadCommand command = captor.getValue();
-            assertThat(command.getRequestId()).isEqualTo(requestId);
-            assertThat(command.getFailReason()).isEqualTo(failReason);
+            verify(mapper).markFailedAsDead(requestId, failReason, maxRetryCount);
         }
 
         @Test
@@ -185,10 +181,11 @@ class NotificationRequestStateServiceTest {
         void markDeadAfterRetryExceeded_fail_whenUpdateCountIsZero() {
             Long requestId = 1L;
             String failReason = "MAX_RETRY_EXCEEDED";
+            int maxRetryCount = 3;
 
-            when(mapper.markFailedAsDead(any(RequestDeadCommand.class))).thenReturn(0);
+            when(mapper.markFailedAsDead(requestId, failReason, maxRetryCount)).thenReturn(0);
 
-            assertThatThrownBy(() -> service.markDeadAfterRetryExceeded(requestId, failReason))
+            assertThatThrownBy(() -> service.markDeadAfterRetryExceeded(requestId, failReason, maxRetryCount))
                     .isInstanceOf(IllegalStateException.class);
         }
     }

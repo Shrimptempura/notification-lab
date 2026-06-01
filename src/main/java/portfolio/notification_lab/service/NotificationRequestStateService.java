@@ -15,7 +15,7 @@ public interface NotificationRequestStateService {
     void markReadyForRetry(Long requestId);
 
     // FAILED -> DEAD
-    void markDeadAfterRetryExceeded(Long requestId, String failReason);
+    void markDeadAfterRetryExceeded(Long requestId, String failReason, int maxRetryCount);
 
     // RESERVED -> DEAD
     void markDeadByNonRetryableFailure(Long requestId, String failReason);

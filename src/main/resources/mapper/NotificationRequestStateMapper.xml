@@ -62,7 +62,7 @@
             updated_at = NOW()
         WHERE id = #{requestId}
             AND status = 'FAILED'
-            AND retry_count &gt;= 3
+            AND retry_count &gt;= #{maxRetryCount}
     </update>
 
     <!-- RESERVED -> DEAD -->

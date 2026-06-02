@@ -78,4 +78,20 @@ public class NotificationWorkerMapperTestSupport {
                 """, requestId);
     }
 
+    public Map<String, Object> findSendAttemptByRequestId(Long requestId) {
+        return jdbcTemplate.queryForMap("""
+                SELECT
+                    id,
+                    request_id,
+                    campaign_id,
+                    recipient_id,
+                    attempt_no,
+                    result_status,
+                    retryable,
+                    fail_reason,
+                    created_at
+                FROM notification_send_attempt
+                WHERE request_id = ?
+                """, requestId);
+    }
 }

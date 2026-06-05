@@ -35,7 +35,8 @@ public class NotificationRequestStateMapperTest {
 
     @BeforeEach
     void setUp() {
-        jdbcTemplate.update("TRUNCATE TABLE notification_request RESTART IDENTITY");
+        jdbcTemplate.update("""
+            TRUNCATE TABLE notification_send_attempt, notification_request RESTART IDENTITY""");
     }
 
     @DisplayName("worker 선점 상태 전이")

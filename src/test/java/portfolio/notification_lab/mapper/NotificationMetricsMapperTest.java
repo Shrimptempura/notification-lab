@@ -34,7 +34,8 @@ public class NotificationMetricsMapperTest {
 
     @BeforeEach
     void setUp() {
-        jdbcTemplate.update("TRUNCATE TABLE notification_request RESTART IDENTITY");
+        jdbcTemplate.update("""
+            TRUNCATE TABLE notification_send_attempt, notification_request RESTART IDENTITY""");
     }
 
     @Test

@@ -1,7 +1,6 @@
 package portfolio.notification_lab.service;
 
 import portfolio.notification_lab.dto.NotificationRequestDto;
-import portfolio.notification_lab.dto.NotificationStatusCountDto;
 
 import java.util.List;
 

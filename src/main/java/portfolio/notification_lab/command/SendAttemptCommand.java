@@ -12,6 +12,6 @@ public class SendAttemptCommand {
     private final Long recipientId;
     private final int attemptNo;
     private final String resultStatus;
-    private final Boolean retryable;
+    private final String providerResultType;
     private final String failReason;
 }

@@ -87,7 +87,7 @@ public class NotificationWorkerMapperTestSupport {
                     recipient_id,
                     attempt_no,
                     result_status,
-                    retryable,
+                    provider_result_type,
                     fail_reason,
                     created_at
                 FROM notification_send_attempt

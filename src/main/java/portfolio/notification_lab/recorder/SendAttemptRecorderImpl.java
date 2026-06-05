@@ -21,10 +21,10 @@ public class SendAttemptRecorderImpl implements SendAttemptRecorder {
         validate(request, result, finalStatus);
 
         int attemptNo = request.getRetryCount() + 1;
-        Boolean retryable = isRetryable(result);
+        String providerResultType = getProviderResultType(result);
 
         SendAttemptCommand command = new SendAttemptCommand(
-                request.getId(), request.getCampaignId(), request.getRecipientId(), attemptNo, finalStatus.name(), retryable, result.failReason());
+                request.getId(), request.getCampaignId(), request.getRecipientId(), attemptNo, finalStatus.name(), providerResultType, result.failReason());
 
         int inserted = sendAttemptMapper.insertSendAttempt(command);
 
@@ -37,12 +37,16 @@ public class SendAttemptRecorderImpl implements SendAttemptRecorder {
                 request.getId(), attemptNo, finalStatus);
     }
 
-    private Boolean isRetryable(SendResult result) {
+    private String getProviderResultType(SendResult result) {
         if (result.success()) {
-            return null;
+            return "SENT";
         }
 
-        return result.retryable();
+        if (result.retryable()) {
+            return "RETRYABLE_FAILURE";
+        }
+
+        return "NON_RETRYABLE_FAILURE";
     }
 
     private void validate(NotificationRequestDto request, SendResult sendResult, NotificationStatus finalStatus) {

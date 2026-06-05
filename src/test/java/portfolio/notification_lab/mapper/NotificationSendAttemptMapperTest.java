@@ -44,7 +44,7 @@ class NotificationSendAttemptMapperTest {
         Long requestId = support.insertRequest("FAILED", 0, null, null, 10);
 
         SendAttemptCommand command = new SendAttemptCommand(
-                requestId, 10L, 100L, 1, "FAILED", true, "TIMEOUT");
+                requestId, 10L, 100L, 1, "FAILED", "RETRYABLE_FAILURE", "TIMEOUT");
 
         int result = mapper.insertSendAttempt(command);
 
@@ -57,7 +57,7 @@ class NotificationSendAttemptMapperTest {
         assertThat(row.get("recipient_id")).isEqualTo(command.getRecipientId());
         assertThat(row.get("attempt_no")).isEqualTo(command.getAttemptNo());
         assertThat(row.get("result_status")).isEqualTo(command.getResultStatus());
-        assertThat(row.get("retryable")).isEqualTo(command.getRetryable());
+        assertThat(row.get("provider_result_type")).isEqualTo(command.getProviderResultType());
         assertThat(row.get("fail_reason")).isEqualTo(command.getFailReason());
     }
 
@@ -68,7 +68,7 @@ class NotificationSendAttemptMapperTest {
         Long requestId = support.insertRequest("FAILED", 0, null, null, 10);
 
         SendAttemptCommand command = new SendAttemptCommand(
-                requestId, 10L, 100L, 1, "FAILED", true, "TIMEOUT");
+                requestId, 10L, 100L, 1, "FAILED", "RETRYABLE_FAILURE", "TIMEOUT");
 
         mapper.insertSendAttempt(command);
 

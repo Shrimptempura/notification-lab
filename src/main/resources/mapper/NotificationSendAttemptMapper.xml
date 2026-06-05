@@ -13,7 +13,7 @@
             recipient_id,
             attempt_no,
             result_status,
-            retryable,
+            provider_result_type,
             fail_reason
         ) VALUES (
             #{requestId},
@@ -21,7 +21,7 @@
             #{recipientId},
             #{attemptNo},
             #{resultStatus},
-            #{retryable},
+            #{providerResultType},
             #{failReason}
         )
     </insert>

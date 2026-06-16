@@ -3,6 +3,7 @@ package portfolio.notification_lab.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import portfolio.notification_lab.config.NotificationRetryProperties;
 import portfolio.notification_lab.domain.notification.NotificationStatus;
 import portfolio.notification_lab.dto.NotificationRequestDto;
@@ -20,6 +21,8 @@ public class NotificationSendServiceImpl implements NotificationSendService {
     private final NotificationRetryProperties retryProperties;
     private final SendAttemptRecorder sendAttemptRecorder;
 
+    // 중요* 외부 api 사용하면 트랜잭션과 꼭 분리해야함 중복발송 조심
+    @Transactional
     @Override
     public void sendOne(NotificationRequestDto request) {
         validateRequest(request);

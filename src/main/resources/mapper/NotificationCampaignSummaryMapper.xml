@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="portfolio.notification_lab.mapper.NotificationCampaignSummaryMapper">
+
+    <!-- summary 생성전 필요 테이블 완료햇는지 확인, 대용량->exist -->
+    <select id="hasRemainingRequests"
+            resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM notification_request
+            WHERE campaign_id = #{campaignId}
+                AND status NOT IN ('SENT', 'DEAD')
+        )
+    </select>
+
+    <!-- request에서 총 개수, sent수, dead수, 시작, 끝 추출 -->
+    <select id="calculateSummary"
+            resultType="portfolio.notification_lab.dto.CampaignSummaryDto">
+        SELECT
+            #{campaignId} AS campaignId,
+            COUNT(*) AS totalRequestCount,
+            COUNT(*) FILTER (WHERE status = 'SENT') AS sentCount,
+            COUNT(*) FILTER (WHERE status = 'DEAD') AS deadCount,
+            MIN(created_at) AS processingStartedAt,
+            MAX(updated_at) AS processingFinishedAt
+        FROM notification_request
+        WHERE campaign_id = #{campaignId}
+    </select>
+
+    <!-- attempt에서 총 시도 횟수 추출 -->
+    <select id="countTotalAttempts"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM notification_send_attempt
+        WHERE campaign_id = #{campaignId}
+    </select>
+
+    <!-- summary 생성 -->
+    <insert id="insertSummary"
+            parameterType="portfolio.notification_lab.dto.CampaignSummaryDto">
+        INSERT INTO notification_campaign_summary (
+            campaign_id,
+            total_request_count,
+            total_attempt_count,
+            sent_count,
+            dead_count,
+            processing_started_at,
+            processing_finished_at,
+            duration_seconds
+        ) VALUES (
+            #{campaignId},
+            #{totalRequestCount},
+            #{totalAttemptCount},
+            #{sentCount},
+            #{deadCount},
+            #{processingStartedAt},
+            #{processingFinishedAt},
+            #{durationSeconds}
+        )
+    </insert>
+
+    <!-- summary 테이블에서 campaignId로 단건 조회 -->
+    <select id="findSummaryByCampaignId"
+            resultType="portfolio.notification_lab.dto.CampaignSummaryDto">
+        SELECT
+            summary_id AS summaryId,
+            campaign_id AS campaignId,
+            total_request_count AS totalRequestCount,
+            total_attempt_count AS totalAttemptCount,
+            sent_count AS sentCount,
+            dead_count AS deadCount,
+            processing_started_at AS processingStartedAt,
+            processing_finished_at AS processingFinishedAt,
+            duration_seconds AS durationSeconds
+        FROM notification_campaign_summary
+        WHERE campaign_id = #{campaignId}
+    </select>
+
+    <!-- 모든 summary 테이블 조회 -->
+    <select id="findAllSummaries"
+            resultType="portfolio.notification_lab.dto.CampaignSummaryDto">
+    SELECT
+        summary_id AS summaryId,
+        campaign_id AS campaignId,
+        total_request_count AS totalRequestCount,
+        total_attempt_count AS totalAttemptCount,
+        sent_count AS sentCount,
+        dead_count AS deadCount,
+        processing_started_at AS processingStartedAt,
+        processing_finished_at AS processingFinishedAt,
+        duration_seconds AS durationSeconds
+    FROM notification_campaign_summary
+    ORDER BY summary_id DESC
+    </select>
+
+
+
+
+</mapper>

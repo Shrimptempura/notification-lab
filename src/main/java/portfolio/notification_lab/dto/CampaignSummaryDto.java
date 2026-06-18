@@ -22,8 +22,8 @@ public class CampaignSummaryDto {
     private Long sentCount;     // request에서 가져옴
     private Long deadCount;     // request에서 가져옴
 
-    private LocalDateTime processedStartedAt;       // request.created_at MIN
-    private LocalDateTime processedFinishedAt;      // request.updated_at MAX
+    private LocalDateTime processingStartedAt;       // request.created_at MIN
+    private LocalDateTime processingFinishedAt;      // request.updated_at MAX
 
     private Long durationSeconds;
 }

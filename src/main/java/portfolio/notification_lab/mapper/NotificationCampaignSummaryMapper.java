@@ -7,7 +7,7 @@ import portfolio.notification_lab.dto.CampaignSummaryDto;
 import java.util.List;
 
 @Mapper
-public class NotificationCampaignSummaryMapper {
+public interface NotificationCampaignSummaryMapper {
 
     // summary 생성 전, request와 attempt 테이블 종료 확인
     boolean hasRemainingRequests(@Param("campaignId") Long campaignId);

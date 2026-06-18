@@ -5,7 +5,8 @@
 
 <mapper namespace="portfolio.notification_lab.mapper.NotificationCampaignSummaryMapper">
 
-    <!-- summary 생성전 필요 테이블 완료햇는지 확인, 대용량->exist -->
+    <!-- request 테이블에서 아직 처리 중인 요청(PENDING, RESERVED, FAILED)이 남아 있는지 확인함
+        true: 미완료 요청 있음, false: 모든 요청이 SENT, DEAD로 끝남 -->
     <select id="hasRemainingRequests"
             resultType="boolean">
         SELECT EXISTS (
@@ -17,7 +18,7 @@
     </select>
 
     <!-- request에서 총 개수, sent수, dead수, 시작, 끝 추출 -->
-    <select id="calculateSummary"
+    <select id="calculateRequests"
             resultType="portfolio.notification_lab.dto.CampaignSummaryDto">
         SELECT
             #{campaignId} AS campaignId,
